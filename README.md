@@ -1,6 +1,8 @@
 Proyecto: API de Gestión de Biblioteca Universitaria
-Integrantes: Jesus Antonio Arroyo Sepulveda MRAI24006
+Integrantes: 
+Jesus Antonio Arroyo Sepulveda MRAI24006
 23030496 - LUIS DANIEL BOBADILLA CONTRERAS
+Andrik Bryan conde leal 23030114
 Descripción:
 En este proyecto, creamos un repositorio público para el sistema de biblioteca digital, donde centralizamos el código, documentación y recursos. Gracias al control de versiones, el equipo puede coordinarse, registrar cambios y mantener organizado el desarrollo, asegurando que cada integrante participe activamente.
 Construir una API REST que permita gestionar el préstamo de libros en una biblioteca.
