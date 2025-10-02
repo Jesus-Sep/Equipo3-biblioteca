@@ -1,28 +1,57 @@
-# Proyecto: API de Gestión de Biblioteca Universitaria
+classDiagram
+    class Usuario {
+        -String id
+        -String nombre
+        -String email
+        -String tipo
+        -Boolean activo
+        -DateTime fecha_registro
+        +prestamos_activos()
+        +historial_prestamos()
+        +puede_solicitar_prestamo()
+    }
 
-## Integrantes
-- Jesus Antonio Arroyo Sepulveda — MRAI24006
-- Luis Daniel Bobadilla Contreras — 23030496
-- Andrik Bryan Conde Leal — 23030114
+    class Libro {
+        -String isbn
+        -String titulo
+        -String autor
+        -String editorial
+        -Integer año_publicacion
+        -String categoria
+        -Integer ejemplares_totales
+        -Integer ejemplares_disponibles
+        -String ubicacion
+        -Boolean disponible
+        +actualizar_disponibilidad()
+        +buscar_por_criterio()
+    }
 
----
+    class Prestamo {
+        -String id
+        -Usuario usuario
+        -Libro libro
+        -DateTime fecha_prestamo
+        -DateTime fecha_devolucion_prevista
+        -DateTime fecha_devolucion_real
+        -String estado
+        -Integer renovaciones
+        +calcular_mora()
+        +renovar()
+        +marcar_devuelto()
+    }
 
-## Descripción
-En este proyecto, creamos un repositorio público para el sistema de biblioteca digital, donde centralizamos el código, documentación y recursos.  
-Gracias al control de versiones, el equipo puede coordinarse, registrar cambios y mantener organizado el desarrollo, asegurando que cada integrante participe activamente.
+    class Reserva {
+        -String id
+        -Usuario usuario
+        -Libro libro
+        -DateTime fecha_reserva
+        -DateTime fecha_expiracion
+        -String estado
+        +activar_reserva()
+        +cancelar_reserva()
+    }
 
-El objetivo principal es construir una API REST que permita gestionar el préstamo de libros en una biblioteca.
-
-### Funcionalidades
-- Registro de libros (título, autor, ISBN, estado).  
-- Registro de usuarios (estudiantes, profesores).  
-- CRUD de préstamos: un libro puede estar disponible, prestado o en espera.  
-- Búsqueda de libros por título, autor o categoría.  
-- Manejo de errores (ejemplo: intentar prestar un libro ya ocupado).  
-- Persistencia de datos en SQLite3.  
-
----
-
-## Conclusión
-El uso de un repositorio público en GitHub para la biblioteca digital facilita la colaboración, la revisión del docente y el control de versiones del proyecto.  
-Esta práctica refuerza las habilidades del equipo en herramientas profesionales y garantiza un desarrollo ordenado y transparente, esencial para el éxito del sistema.
+    Usuario "1" -- "*" Prestamo : realiza
+    Libro "1" -- "*" Prestamo : prestado_en
+    Usuario "1" -- "*" Reserva : realiza
+    Libro "1" -- "*" Reserva : reservado_en
