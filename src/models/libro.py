@@ -1,27 +1,30 @@
-class Libro:
-    def __init__(self, isbn: str, titulo: str, autor: str, genero: str, 
-                 anio_publicacion: int, editorial: str, ejemplares_totales: int = 1):
-        self.isbn = isbn
-        self.titulo = titulo
-        self.autor = autor
-        self.genero = genero
-        self.anio_publicacion = anio_publicacion
-        self.editorial = editorial
-        self.ejemplares_totales = ejemplares_totales
-        self.ejemplares_disponibles = ejemplares_totales
-        self.disponible = ejemplares_totales > 0
+from src.extensions import db
+
+class Libro(db.Model):
+    __tablename__ = "libros"
+    
+    isbn = db.Column(db.String(20), primary_key=True)
+    titulo = db.Column(db.String(200), nullable=False)
+    autor = db.Column(db.String(100), nullable=False)
+    genero = db.Column(db.String(50))
+    anio_publicacion = db.Column(db.Integer)
+    editorial = db.Column(db.String(100))
+    ejemplares_totales = db.Column(db.Integer, default=1)
+    ejemplares_disponibles = db.Column(db.Integer, default=1)
+    
+    @property
+    def disponible(self):
+        return self.ejemplares_disponibles > 0
     
     def prestar(self):
         if self.ejemplares_disponibles > 0:
             self.ejemplares_disponibles -= 1
-            self.disponible = self.ejemplares_disponibles > 0
             return True
         return False
     
     def devolver(self):
         if self.ejemplares_disponibles < self.ejemplares_totales:
             self.ejemplares_disponibles += 1
-            self.disponible = True
             return True
         return False
     
@@ -30,12 +33,11 @@ class Libro:
             diferencia = cantidad - self.ejemplares_totales
             self.ejemplares_totales = cantidad
             self.ejemplares_disponibles += diferencia
-            self.disponible = self.ejemplares_disponibles > 0
             return True
         return False
     
     def __str__(self):
-        return f"Libro: {self.titulo} - {self.autor} ({self.anio_publicacion}) - Disponibles: {self.ejemplares_disponibles}/{self.ejemplares_totales}"
+        return f'Libro: {self.titulo} - {self.autor} ({self.anio_publicacion}) - Disponibles: {self.ejemplares_disponibles}/{self.ejemplares_totales}'
     
     def to_dict(self):
         return {

@@ -1,61 +1,53 @@
+import uuid
 from datetime import datetime, timedelta
-from typing import Optional
-from uuid import uuid4
+from src.extensions import db
 
-class Reserva:
-    def __init__(self, usuario, libro, fecha_reserva: Optional[datetime] = None,
-                 id: Optional[str] = None):
-        self.id = id or str(uuid4())
-        self.usuario = usuario
-        self.libro = libro
-        self.fecha_reserva = fecha_reserva or datetime.now()
-        self.fecha_expiracion = self.fecha_reserva + timedelta(days=3)  # 3 días de reserva
-        self.estado = 'activa'  # 'activa', 'expirada', 'cancelada', 'completada'
-
+class Reserva(db.Model):
+    __tablename__ = "reservas"
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    usuario_id = db.Column(db.String(36), db.ForeignKey('usuarios.id'), nullable=False)
+    libro_isbn = db.Column(db.String(20), db.ForeignKey('libros.isbn'), nullable=False)
+    fecha_reserva = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha_expiracion = db.Column(db.DateTime)
+    estado = db.Column(db.String(20), default="activa")  # activa, expirada, cancelada, completada
+    
+    # Relaciones
+    usuario = db.relationship('Usuario', backref='reservas')
+    libro = db.relationship('Libro', backref='reservas')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.fecha_expiracion:
+            self.fecha_expiracion = datetime.utcnow() + timedelta(days=3)
+    
     def activar_reserva(self) -> bool:
-        """Activa la reserva si el libro está disponible"""
-        if self.libro.esta_disponible() and self.estado == 'activa':
+        """Activa la reserva si el libro estÃ¡ disponible"""
+        if self.libro and self.libro.disponible and self.estado == "activa":
             self.estado = 'completada'
             return True
         return False
-
+    
     def cancelar_reserva(self):
         """Cancela la reserva"""
         self.estado = 'cancelada'
-
+    
     def verificar_expiracion(self):
         """Verifica si la reserva ha expirado"""
-        if (self.estado == 'activa' and 
-            datetime.now() > self.fecha_expiracion):
+        if self.estado == "activa" and datetime.utcnow() > self.fecha_expiracion:
             self.estado = 'expirada'
-
+    
     def esta_activa(self) -> bool:
-        """Verifica si la reserva está activa"""
+        """Verifica si la reserva estÃ¡ activa"""
         self.verificar_expiracion()
-        return self.estado == 'activa'
-
+        return self.estado == "activa"
+    
     def to_dict(self) -> dict:
-        """Convierte el objeto a diccionario para serialización"""
         return {
             'id': self.id,
-            'usuario_id': self.usuario.id,
-            'libro_id': self.libro.id,
-            'fecha_reserva': self.fecha_reserva.isoformat(),
-            'fecha_expiracion': self.fecha_expiracion.isoformat(),
+            'usuario_id': self.usuario_id,
+            'libro_isbn': self.libro_isbn,
+            'fecha_reserva': self.fecha_reserva.isoformat() if self.fecha_reserva else None,
+            'fecha_expiracion': self.fecha_expiracion.isoformat() if self.fecha_expiracion else None,
             'estado': self.estado
         }
-
-    @classmethod
-    def from_dict(cls, data: dict, usuario, libro):
-        """Crea un objeto Reserva desde un diccionario"""
-        reserva = cls(
-            usuario=usuario,
-            libro=libro,
-            fecha_reserva=datetime.fromisoformat(data['fecha_reserva']),
-            id=data.get('id')
-        )
-        
-        reserva.fecha_expiracion = datetime.fromisoformat(data['fecha_expiracion'])
-        reserva.estado = data['estado']
-        
-        return reserva

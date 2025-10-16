@@ -1,14 +1,16 @@
 import uuid
 from datetime import datetime
+from src.extensions import db
 
-class Usuario:
-    def __init__(self, nombre: str, email: str, telefono: str = ""):
-        self.id = str(uuid.uuid4())
-        self.nombre = nombre
-        self.email = email
-        self.telefono = telefono
-        self.activo = True
-        self.fecha_registro = datetime.now()
+class Usuario(db.Model):
+    __tablename__ = "usuarios"
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    nombre = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    telefono = db.Column(db.String(20), default="")
+    activo = db.Column(db.Boolean, default=True)
+    fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
     
     def actualizar_info(self, nombre: str = None, telefono: str = None):
         if nombre:
@@ -29,5 +31,5 @@ class Usuario:
             'email': self.email,
             'telefono': self.telefono,
             'activo': self.activo,
-            'fecha_registro': self.fecha_registro.isoformat()
+            'fecha_registro': self.fecha_registro.isoformat() if self.fecha_registro else None
         }
